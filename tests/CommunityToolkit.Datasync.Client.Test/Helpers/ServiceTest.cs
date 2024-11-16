@@ -20,7 +20,8 @@ public abstract class ServiceTest(ServiceApplicationFactory factory)
 
     protected DateTimeOffset StartTime { get; } = DateTimeOffset.UtcNow;
 
-    internal IntegrationDbContext GetOfflineContext(bool useRealFile = false, bool enableLogging = false)
+    internal IntegrationDbContext GetOfflineContext(bool useRealFile = false,
+        bool enableLogging = false, bool enableLazyoading = false)
     {
         string filename = null;
         string connectionString = "Data Source=:memory:";
@@ -47,7 +48,12 @@ public abstract class ServiceTest(ServiceApplicationFactory factory)
             optionsBuilder.EnableDetailedErrors();
         }
 
-        IntegrationDbContext context = new(optionsBuilder.Options) 
+        if (enableLazyoading)
+        {
+            optionsBuilder.UseLazyLoadingProxies();
+        }
+
+        IntegrationDbContext context = new(optionsBuilder.Options)
         {
             Factory = factory,
             Filename = filename,
