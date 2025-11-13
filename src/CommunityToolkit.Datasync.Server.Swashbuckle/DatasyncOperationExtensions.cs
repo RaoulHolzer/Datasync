@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace CommunityToolkit.Datasync.Server.Swashbuckle;
 
@@ -30,7 +30,7 @@ internal static class DatasyncOperationExtensions
             Description = description,
             In = ParameterLocation.Header,
             Required = false,
-            Schema = new OpenApiSchema { Type = "string" }
+            Schema = new OpenApiSchema { Type = JsonSchemaType.String }
         });
     }
 
@@ -43,13 +43,21 @@ internal static class DatasyncOperationExtensions
     /// <param name="description">The OpenAPI description for the query parameter.</param>
     internal static void AddODataQueryParameter(this OpenApiOperation operation, string parameterName, string parameterType, string description)
     {
+        JsonSchemaType schemaType = parameterType.ToLowerInvariant() switch
+        {
+            "boolean" => JsonSchemaType.Boolean,
+            "integer" => JsonSchemaType.Integer,
+            "number" => JsonSchemaType.Number,
+            _ => JsonSchemaType.String
+        };
+
         operation.Parameters.Add(new OpenApiParameter
         {
             Name = parameterName,
             Description = description,
             In = ParameterLocation.Query,
             Required = false,
-            Schema = new OpenApiSchema { Type = parameterType }
+            Schema = new OpenApiSchema { Type = schemaType }
         });
     }
 
@@ -90,7 +98,7 @@ internal static class DatasyncOperationExtensions
             : "The opaque versioning identifier of the entity";
         response.Headers.Add("ETag", new OpenApiHeader
         {
-            Schema = new OpenApiSchema { Type = "string" },
+            Schema = new OpenApiSchema { Type = JsonSchemaType.String },
             Description = $"{etagDescription}, per RFC 9110 8.8.3."
         });
         operation.Responses[statusCode] = response;

@@ -4,9 +4,10 @@
 
 using CommunityToolkit.Datasync.Server.Filters;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
 using System.Reflection;
 
 namespace CommunityToolkit.Datasync.Server.Swashbuckle;
@@ -74,11 +75,11 @@ public class DatasyncDocumentFilter(Assembly? assemblyToQuery = null) : IDocumen
 
         // Get the various operations
         Dictionary<OpType, OpenApiOperation> operations = [];
-        AddOperationIfPresent(operations, OpType.Create, document, allEntitiesPath, OperationType.Post);
-        AddOperationIfPresent(operations, OpType.Delete, document, singleEntityPath, OperationType.Delete);
-        AddOperationIfPresent(operations, OpType.GetById, document, singleEntityPath, OperationType.Get);
-        AddOperationIfPresent(operations, OpType.List, document, allEntitiesPath, OperationType.Get);
-        AddOperationIfPresent(operations, OpType.Replace, document, singleEntityPath, OperationType.Put);
+        AddOperationIfPresent(operations, OpType.Create, document, allEntitiesPath, HttpMethod.Post);
+        AddOperationIfPresent(operations, OpType.Delete, document, singleEntityPath, HttpMethod.Delete);
+        AddOperationIfPresent(operations, OpType.GetById, document, singleEntityPath, HttpMethod.Get);
+        AddOperationIfPresent(operations, OpType.List, document, allEntitiesPath, HttpMethod.Get);
+        AddOperationIfPresent(operations, OpType.Replace, document, singleEntityPath, HttpMethod.Put);
 
         // Make the system properties in the entity read-only
         if (!this.processedEntityNames.Contains(entityType.Name))
@@ -179,11 +180,11 @@ public class DatasyncDocumentFilter(Assembly? assemblyToQuery = null) : IDocumen
     /// <param name="document">The <see cref="OpenApiDocument"/> being processed.</param>
     /// <param name="path">The expected path for the operation type.</param>
     /// <param name="operationType">The operation type being processed.</param>
-    private static void AddOperationIfPresent(Dictionary<OpType, OpenApiOperation> operations, OpType opType, OpenApiDocument document, string path, OperationType operationType)
+    private static void AddOperationIfPresent(Dictionary<OpType, OpenApiOperation> operations, OpType opType, OpenApiDocument document, string path, HttpMethod httpMethod)
     {
         if (document.Paths.TryGetValue(path, out OpenApiPathItem? pathValue))
         {
-            if (pathValue!.Operations.TryGetValue(operationType, out OpenApiOperation? operation))
+            if (pathValue!.Operations.TryGetValue(httpMethod, out OpenApiOperation? operation))
             {
                 operations[opType] = operation!;
             }
