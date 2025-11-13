@@ -6,7 +6,7 @@ using CommunityToolkit.Datasync.Server.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace CommunityToolkit.Datasync.Server.OpenApi;
 
@@ -109,6 +109,7 @@ public class DatasyncOperationTransformer : IOpenApiOperationTransformer
 
         operation.AddRequestBody(context.GetSchemaForType(entityType));
 
+        operation.Responses ??= new OpenApiResponses();
         operation.Responses.AddEntityResponse(StatusCodes.Status201Created,
             context.GetSchemaForType(entityType), includeConditionalHeaders: true);
         operation.Responses.AddStatusCode(StatusCodes.Status400BadRequest);
@@ -131,9 +132,11 @@ public class DatasyncOperationTransformer : IOpenApiOperationTransformer
     {
         Type entityType = GetEntityType(context);
 
+        operation.Parameters ??= [];
         operation.Parameters.AddIfMatchHeader();
         operation.Parameters.AddIfUnmodifiedSinceHeader();
 
+        operation.Responses ??= new OpenApiResponses();
         operation.Responses.AddStatusCode(StatusCodes.Status400BadRequest);
         operation.Responses.AddStatusCode(StatusCodes.Status404NotFound);
         operation.Responses.AddStatusCode(StatusCodes.Status410Gone);
@@ -157,6 +160,7 @@ public class DatasyncOperationTransformer : IOpenApiOperationTransformer
         Type entityType = GetEntityType(context);
         Type pagedEntityType = typeof(PagedResult<>).MakeGenericType(entityType);
 
+        operation.Parameters ??= [];
         operation.Parameters.AddBooleanQueryParameter("$count", "Whether to include the total count of items matching the query in the result");
         operation.Parameters.AddStringQueryParameter("$filter", "The filter to apply to the query");
         operation.Parameters.AddStringQueryParameter("$orderby", "The comma-separated list of ordering instructions to apply to the query");
@@ -165,6 +169,7 @@ public class DatasyncOperationTransformer : IOpenApiOperationTransformer
         operation.Parameters.AddIntQueryParameter("$top", "The number of items to return", 1);
         operation.Parameters.AddIncludeDeletedQuery();
 
+        operation.Responses ??= new OpenApiResponses();
         operation.Responses.AddEntityResponse(StatusCodes.Status200OK,
             context.GetSchemaForType(pagedEntityType), includeConditionalHeaders: false);
         operation.Responses.AddStatusCode(StatusCodes.Status400BadRequest);
@@ -183,10 +188,12 @@ public class DatasyncOperationTransformer : IOpenApiOperationTransformer
     {
         Type entityType = GetEntityType(context);
 
+        operation.Parameters ??= [];
         operation.Parameters.AddIncludeDeletedQuery();
         operation.Parameters.AddIfNoneMatchHeader();
         operation.Parameters.AddIfModifiedSinceHeader();
 
+        operation.Responses ??= new OpenApiResponses();
         operation.Responses.AddEntityResponse(StatusCodes.Status200OK,
             context.GetSchemaForType(entityType), includeConditionalHeaders: true);
         operation.Responses.AddStatusCode(StatusCodes.Status304NotModified);
@@ -208,10 +215,12 @@ public class DatasyncOperationTransformer : IOpenApiOperationTransformer
         Type entityType = GetEntityType(context);
 
         operation.AddRequestBody(context.GetSchemaForType(entityType));
+        operation.Parameters ??= [];
         operation.Parameters.AddIncludeDeletedQuery();
         operation.Parameters.AddIfMatchHeader();
         operation.Parameters.AddIfUnmodifiedSinceHeader();
 
+        operation.Responses ??= new OpenApiResponses();
         operation.Responses.AddEntityResponse(StatusCodes.Status200OK,
             context.GetSchemaForType(entityType), includeConditionalHeaders: true);
         operation.Responses.AddStatusCode(StatusCodes.Status400BadRequest);
